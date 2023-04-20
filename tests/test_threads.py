@@ -3,6 +3,7 @@ import time
 import uuid
 from dataclasses import asdict
 from unittest.mock import Mock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -110,3 +111,31 @@ def test_send_state():
 
     # Then
     assert sensor_queue.empty()
+
+
+def test_send_state_fails():
+    # Given
+    sensor = Sensor()
+    example_event = Event(type="nominal", readings=[1, 2, 3])
+    sensor_state = SensorMessage(id=sensor.sensor_id, event=example_event, timestamp=1234567890)
+
+    sensor_queue = queue.Queue()
+    sensor_queue.put(sensor_state)
+
+    mock_response = Mock()
+    mock_response.status_code = 500
+
+    # When
+
+    with patch("requests.post", return_value=mock_response):
+        from threading import Thread
+        sender_thread = Thread(target=send_state, args=(sensor_queue,), daemon=True)
+        sender_thread.start()
+
+        assert sensor_queue.qsize() == 1
+
+        sensor_queue.put(None)
+        sender_thread.join()
+
+    # Then
+    assert sensor_queue.qsize() == 2

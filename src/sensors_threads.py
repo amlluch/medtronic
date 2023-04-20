@@ -3,7 +3,7 @@ import time
 import uuid
 import random
 from dataclasses import dataclass, asdict
-from typing import List
+from typing import List, Callable
 
 import requests
 
@@ -53,17 +53,23 @@ class Sensor:
 
 
 def send_state(sensor_queue: queue.Queue) -> None:
+    attempts = 0
     while True:
-        try:
-            reading = sensor_queue.get(block=False)
-            if reading is None:
-                break
-            response = requests.post(URL, json=asdict(reading), headers=HEADERS)
-            if response.status_code != 200:
-                continue
-            sensor_queue.task_done()
-        except queue.Empty:
-            time.sleep(0.5)
+        # sensor_queue.mutex not working fine with pytest. Excluded here
+        reading = sensor_queue.queue[0] if not sensor_queue.empty() else None
+        if reading is None:
+            sensor_queue.get()
+            break
+        response = requests.post(URL, json=asdict(reading), headers=HEADERS)
+        if response.status_code != 200:
+            attempts += 1
+            if attempts > 3:
+                raise TimeoutError
+        else:
+            attempts = 0
+            sensor_queue.get()
+
+        time.sleep(0.5)
 
 
 def sensor_producer(sensor: Sensor, sensor_queue: queue.Queue, total_elements: int) -> None:
