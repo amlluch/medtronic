@@ -98,6 +98,7 @@ def test_send_state():
     sensor_queue.put(sensor_state)
 
     mock_response = Mock()
+    sensor_queue.mutex = MagicMock()
     mock_response.status_code = 200
 
     # When
@@ -123,6 +124,7 @@ def test_send_state_fails():
     sensor_queue.put(sensor_state)
 
     mock_response = Mock()
+    sensor_queue.mutex = MagicMock()
     mock_response.status_code = 500
 
     # When
