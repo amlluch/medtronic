@@ -3,13 +3,12 @@ import time
 import uuid
 from dataclasses import asdict
 from unittest.mock import Mock, patch
-from unittest.mock import MagicMock
 
 import pytest
 
 from src.errors import EventTypeError
-from src.sensors_threads import Sensor, send_state
 from src.sensors_threads import Event, SensorMessage, sensor_producer
+from src.sensors_threads import Sensor, send_state
 
 
 def test_can_instantiate_event() -> None:
@@ -98,7 +97,6 @@ def test_send_state():
     sensor_queue.put(sensor_state)
 
     mock_response = Mock()
-    sensor_queue.mutex = MagicMock()
     mock_response.status_code = 200
 
     # When
@@ -124,7 +122,6 @@ def test_send_state_fails():
     sensor_queue.put(sensor_state)
 
     mock_response = Mock()
-    sensor_queue.mutex = MagicMock()
     mock_response.status_code = 500
 
     # When

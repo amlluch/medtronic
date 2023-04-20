@@ -55,8 +55,7 @@ class Sensor:
 def send_state(sensor_queue: queue.Queue) -> None:
     attempts = 0
     while True:
-        with sensor_queue.mutex:
-            reading = sensor_queue.queue[0] if not sensor_queue.empty() else None
+        reading = sensor_queue.queue[0] if not sensor_queue.empty() else None
         if reading is None:
             sensor_queue.get()
             break
