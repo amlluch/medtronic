@@ -75,6 +75,7 @@ def sensor_producer(sensor: Sensor, sensor_queue: queue.Queue, total_elements: i
     for i in range(total_elements):
         sensor_queue.put(sensor.state)
         time.sleep(random.uniform(0.1, 1.5))
+    sensor_queue.put(None)
 
 
 def main() -> None:
@@ -92,12 +93,8 @@ def main() -> None:
     consumer = threading.Thread(target=send_state, args=(sensor_queue,))
 
     producer.start()
-    consumer.start()
-
     producer.join()
-
-    sensor_queue.put(None)
-    consumer.join()
+    consumer.start()
 
 
 if __name__ == "__main__":

@@ -72,7 +72,7 @@ def test_sensor_producer() -> None:
     sensor_producer(sensor, sensor_queue, total_elements)
 
     # Then
-    assert sensor_queue.qsize() == total_elements
+    assert sensor_queue.qsize() == total_elements + 1
 
     for _ in range(total_elements):
         sensor_state = sensor_queue.get()
